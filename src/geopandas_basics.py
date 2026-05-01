@@ -153,7 +153,12 @@ def transform_crs(
     # - Handle cases where CRS is None
     # - Validate target_crs is valid
     # - Return a copy, not modify original
-    raise NotImplementedError("transform_crs not yet implemented")
+    if gdf.crs is None:
+        raise ValueError("GeoDataFrame has no CRS defined")
+    try:
+        return gdf.to_crs(target_crs)
+    except Exception as e:
+        raise ValueError(f"Invalid target CRS: {e}")
 
 
 # Function 4: Geometry Operations
