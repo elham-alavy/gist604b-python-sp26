@@ -428,7 +428,35 @@ def overlay_and_visualize(
     # - For interactive map, use gdf.explore()
     # - Calculate statistics (feature counts, total area)
     # - Save figure if save_path provided
-    raise NotImplementedError("overlay_and_visualize not yet implemented")
+    valid_operations = ['intersection', 'union', 'difference', 'symmetric_difference']
+    result = {}
+
+    if gdf2 is not None:
+        if overlay_how not in valid_operations:
+            raise ValueError(f"Invalid overlay operation '{overlay_how}'")
+        if gdf1.crs != gdf2.crs:
+            raise ValueError("CRS mismatch between GeoDataFrames")
+        overlay_result = gpd.overlay(gdf1, gdf2, how=overlay_how)
+        result['overlay_result'] = overlay_result
+        result['statistics'] = {
+            'feature_count': len(overlay_result),
+            'total_area': overlay_result.geometry.area.sum() if len(overlay_result) > 0 else 0
+        }
+
+    fig, ax = plt.subplots(1, 1, figsize=(10, 8))
+    gdf1.plot(ax=ax, alpha=0.5, color='red')
+    if gdf2 is not None:
+        gdf2.plot(ax=ax, alpha=0.3, color='green')
+        if len(overlay_result) > 0:
+            overlay_result.plot(ax=ax, alpha=0.5, color='blue')
+    ax.set_title(f"Overlay: {overlay_how}" if gdf2 is not None else "Map")
+    result['figure'] = fig
+
+    if save_path is not None:
+        fig.savefig(save_path)
+
+    plt.close(fig)
+    return result
 
 
 # Helper Functions (provided for you)
