@@ -212,7 +212,39 @@ def geometry_operations(
     # - For length: use gdf.geometry.length
     # - For simplify: use gdf.geometry.simplify(tolerance)
     # - Return results in standardized dictionary format
-    raise NotImplementedError("geometry_operations not yet implemented")
+    valid_operations = ['buffer', 'centroid', 'area', 'length', 'simplify']
+    if operation not in valid_operations:
+        raise ValueError(f"Invalid operation '{operation}'. Must be one of {valid_operations}")
+
+    result_gdf = gdf.copy()
+
+    if operation == 'buffer':
+        if 'distance' not in kwargs:
+            raise ValueError("buffer operation requires 'distance' parameter")
+        result_gdf['geometry'] = gdf.geometry.buffer(kwargs['distance'])
+        stats = {'mean_area': result_gdf.geometry.area.mean()}
+
+    elif operation == 'centroid':
+        result_gdf['geometry'] = gdf.geometry.centroid
+        stats = {'feature_count': len(result_gdf)}
+
+    elif operation == 'area':
+        result_gdf['area'] = gdf.geometry.area
+        stats = {'mean_area': result_gdf['area'].mean(), 'total_area': result_gdf['area'].sum(),
+                 'min_area': result_gdf['area'].min(), 'max_area': result_gdf['area'].max()}
+
+    elif operation == 'length':
+        result_gdf['length'] = gdf.geometry.length
+        stats = {'mean_length': result_gdf['length'].mean(), 'total_length': result_gdf['length'].sum(),
+                 'min_length': result_gdf['length'].min(), 'max_length': result_gdf['length'].max()}
+
+    elif operation == 'simplify':
+        if 'tolerance' not in kwargs:
+            raise ValueError("simplify operation requires 'tolerance' parameter")
+        result_gdf['geometry'] = gdf.geometry.simplify(kwargs['tolerance'])
+        stats = {'feature_count': len(result_gdf)}
+
+    return {'result': result_gdf, 'statistics': stats, 'operation': operation}
 
 
 # Function 5: Spatial Relationships
