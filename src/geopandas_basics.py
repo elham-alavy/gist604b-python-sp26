@@ -297,7 +297,33 @@ def spatial_relationships(
     # - For within: use gdf1.geometry.within(gdf2.geometry)
     # - For distance: use gdf1.geometry.distance(gdf2.geometry)
     # - For nearest: use spatial indexing (.sindex)
-    raise NotImplementedError("spatial_relationships not yet implemented")
+    valid_relationships = ['intersects', 'contains', 'within', 'distance']
+    if relationship not in valid_relationships:
+        raise ValueError(f"Invalid relationship '{relationship}'. Must be one of {valid_relationships}")
+
+    if gdf1.crs != gdf2.crs:
+        gdf2 = gdf2.to_crs(gdf1.crs)
+
+    if relationship == 'intersects':
+        mask = gdf1.geometry.apply(lambda g: gdf2.geometry.intersects(g).any())
+        result = gdf1[mask]
+        return {'result': result, 'relationship': relationship, 'count': len(result)}
+
+    elif relationship == 'contains':
+        mask = gdf1.geometry.apply(lambda g: gdf2.geometry.within(g).any())
+        result = gdf1[mask]
+        return {'result': result, 'relationship': relationship, 'count': len(result)}
+
+    elif relationship == 'within':
+        mask = gdf1.geometry.apply(lambda g: gdf2.geometry.contains(g).any())
+        result = gdf1[mask]
+        return {'result': result, 'relationship': relationship, 'count': len(result)}
+
+    elif relationship == 'distance':
+        distances = gdf1.geometry.apply(lambda g: gdf2.geometry.distance(g).min())
+        result_gdf = gdf1.copy()
+        result_gdf['min_distance'] = distances
+        return {'result': result_gdf, 'relationship': relationship, 'distances': distances.tolist()}
 
 
 # Function 6: Spatial Joins
