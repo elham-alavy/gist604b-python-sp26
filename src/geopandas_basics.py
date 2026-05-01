@@ -57,7 +57,14 @@ def load_spatial_data(file_path: Union[str, Path], **kwargs) -> gpd.GeoDataFrame
     # - Use gpd.read_file() to load data
     # - Handle different file formats appropriately
     # - Validate the loaded data is not empty
-    raise NotImplementedError("load_spatial_data not yet implemented")
+    file_path = Path(file_path)
+    if not file_path.exists():
+        raise FileNotFoundError(f"File not found: {file_path}")
+    try:
+        gdf = gpd.read_file(file_path, **kwargs)
+    except Exception as e:
+        raise ValueError(f"Could not read spatial file: {e}")
+    return gdf
 
 
 # Function 2: Explore Properties
