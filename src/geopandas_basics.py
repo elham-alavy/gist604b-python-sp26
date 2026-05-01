@@ -364,7 +364,15 @@ def spatial_joins(
     # - Use gpd.sjoin() for spatial join
     # - Handle CRS mismatch by transforming
     # - Validate result is not empty (for inner joins)
-    raise NotImplementedError("spatial_joins not yet implemented")
+    valid_predicates = ['intersects', 'contains', 'within']
+    valid_hows = ['inner', 'left', 'right']
+    if predicate not in valid_predicates:
+        raise ValueError(f"Invalid predicate '{predicate}'")
+    if how not in valid_hows:
+        raise ValueError(f"Invalid join type '{how}'")
+    if left_gdf.crs != right_gdf.crs:
+        raise ValueError("CRS mismatch between GeoDataFrames")
+    return gpd.sjoin(left_gdf, right_gdf, how=how, predicate=predicate)
 
 
 # Function 7: Overlay and Visualize
