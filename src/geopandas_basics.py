@@ -102,7 +102,21 @@ def explore_properties(gdf: gpd.GeoDataFrame) -> Dict[str, Any]:
     # - Use gdf.total_bounds for extent
     # - Check gdf.geometry.geom_type for geometry types
     # - Count features with len(gdf)
-    raise NotImplementedError("explore_properties not yet implemented")
+    if len(gdf) == 0:
+        return {
+            'crs': gdf.crs,
+            'bounds': list(gdf.total_bounds),
+            'geometry_types': [],
+            'feature_count': 0,
+            'columns': list(gdf.columns)
+        }
+    return {
+        'crs': gdf.crs,
+        'bounds': list(gdf.total_bounds),
+        'geometry_types': list(gdf.geometry.geom_type.unique()),
+        'feature_count': len(gdf),
+        'columns': list(gdf.columns)
+    }
 
 
 # Function 3: Transform CRS
